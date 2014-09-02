@@ -28,3 +28,22 @@ let result_guard def_fn =
         return ()
       | Error exn ->
         raise exn)
+
+let simply_print_response ~exn format =
+  (Async_shell.sh_one format)
+  >>= function
+  | Some result ->
+    print_string result;
+    return @@ Ok ()
+  | None ->
+    return @@ Error exn
+
+let cmd_monitor ~exn format () =
+  result_guard (fun _ -> simply_print_response ~exn format)
+
+let cmd_simply_print_response ~name ~desc ~exn format =
+  let command =
+    Command.async_basic ~summary:desc
+      Command.Spec.empty
+      (cmd_monitor ~exn format) in
+  (name, command)
