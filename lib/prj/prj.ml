@@ -10,6 +10,7 @@ let command =
      Prj_mosh.desc;
      Prj_with_dynamodb.desc;
      Prj_repl.desc;
-     Prj_make_dot_merlin.desc]
+     Prj_make_dot_merlin.desc;
+     Prj_sync.desc]
 
 let desc = (name, command)
