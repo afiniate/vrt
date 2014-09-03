@@ -1,0 +1,5 @@
+<lib/common>: include
+<lib/prj>: include
+<src>: include
+
+<tests>: include
