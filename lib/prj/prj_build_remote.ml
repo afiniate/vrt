@@ -17,10 +17,10 @@ let do_ssh logger identity ip area command =
       ~verbose:true in
   (match area with
    | Main ->
-     ssh "cd /vagrant; source /home/ubuntu/.opam/opam-init/init.sh; make %s"
+     ssh "cd /vagrant; source /home/ubuntu/.opam/opam-init/init.sh; PATH=$PATH:~/.cabal/bin; make %s"
        command
    | Devops ->
-     ssh "cd /vagrant/devops; source /home/ubuntu/.opam/opam-init/init.sh; make %s"
+     ssh "cd /vagrant/devops; source /home/ubuntu/.opam/opam-init/init.sh;PATH=$PATH:~/.cabal/bin; make %s"
        command)
   >>| fun _ ->
   Ok ()
@@ -32,7 +32,9 @@ let do_build log_level area cmd =
   Log.info logger "Project root is %s" project_root;
   Log.info logger "Starting vagrant ...";
   Common.Logging.flush logger
-  >>=? fun _ ->
+  >>= fun _ ->
+  Common.Dirs.change_to project_root
+  >>= fun _ ->
   Prj_vagrant.start_vagrant project_root
   >>=? fun ip ->
   Log.info logger "Remote IP is %s" ip;
