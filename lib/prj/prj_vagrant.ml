@@ -97,7 +97,7 @@ let internal_rsync ~identity ~project_root ~ip () =
     ~echo:true
     ~verbose:true
     "rsync -avz -e \"ssh -l ubuntu -i %s\" \
-     --delete --exclude '.git' --exclude '_build' --exclude '.#*' %s/ \"%s:/vagrant/\""
+     --delete --exclude '_build' --exclude '.#*' %s/ \"%s:/vagrant/\""
     identity project_root ip
   >>| fun _ ->
   Ok ()
