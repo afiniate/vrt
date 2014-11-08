@@ -17,7 +17,7 @@ let create_with_commit_count ref =
 
 let deep_parse potential_ver =
   return (let open Or_error.Monad_infix in
-          Re2.create "^((v)?(\\d+(\\.\\d+(\\.\\d+)?)?))$|^([A-Fa-f0-9]+)$"
+          Re2.create "^((v)?(\\d+(\\.\\d+(\\.\\d+)?)))$|^([A-Fa-f0-9]+)$"
           >>= fun re ->
           Re2.find_submatches re potential_ver)
 
