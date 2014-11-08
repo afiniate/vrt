@@ -1,5 +1,6 @@
 open Core.Std
 open Async.Std
+open Re2.Std
 
 exception Semver_commit_count_failure of String.t
 exception Semver_version_parse_failure of String.t
@@ -16,9 +17,9 @@ let create_with_commit_count ref =
 
 let deep_parse potential_ver =
   return (let open Or_error.Monad_infix in
-          Re2.Regex.create "^((v)?(\\d+(\\.\\d+(\\.\\d+)?)?))$|^([A-Fa-f0-9]+)$"
+          Re2.create "^((v)?(\\d+(\\.\\d+(\\.\\d+)?)?))$|^([A-Fa-f0-9]+)$"
           >>= fun re ->
-          Re2.Regex.find_submatches re potential_ver)
+          Re2.find_submatches re potential_ver)
 
 let parse_ver potential_ver top =
   deep_parse potential_ver
@@ -36,9 +37,9 @@ let parse_ver potential_ver top =
 let split_version = function
   | Some ver ->
     return (let open Or_error.Monad_infix in
-            Re2.Regex.create "-"
+            Re2.create "-"
             >>| fun re ->
-            Re2.Regex.split re ver)
+            Re2.split re ver)
   | _ ->
     return @@ Or_error.error_string "No version returned"
 
