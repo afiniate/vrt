@@ -6,7 +6,6 @@ exception Dot_merline_write_error
 
 let active_libs = [
   "async";
-  "async";
   "async_extra";
   "async_kernel";
   "async_unix";
@@ -20,7 +19,6 @@ let active_libs = [
   "cohttp";
   "comparelib";
   "conduit";
-  "core";
   "core";
   "core_extended";
   "core_kernel";
