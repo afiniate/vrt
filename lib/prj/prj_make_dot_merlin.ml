@@ -8,6 +8,7 @@ let active_libs = [
   "async";
   "async_extra";
   "async_kernel";
+  "async_shell";
   "async_unix";
   "atd";
   "atdgen";
