@@ -1,7 +1,10 @@
+".git": -traverse
+".git": not_hygienic
+
+true: warn_error_A, warn(-40)
+
 <lib/common>: include
 <lib/prj>: include
 <lib/info>: include
 
 <src>: include
-
-<tests>: include
