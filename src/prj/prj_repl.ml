@@ -2,42 +2,47 @@ open Core.Std
 open Core_extended.Std
 open Async.Std
 
-let repl logger dirs =
+let repl logger dirs init_script =
   let includes = List.fold ~init:"" ~f:(fun acc dir ->
       acc ^ " -I " ^ dir) dirs in
+  let init = match init_script with
+    | Some script -> " -init " ^ script
+    | None -> " " in
   Common.Unix.execvp
     ~prog:"sh"
     ~args:["-c";
-           "utop -init build-support/lib/voteraise-init.ml " ^ includes]
+           "utop  " ^ init ^ includes]
     ()
 
-let gather_dirs root =
-  Common.Dirs.gather_dirs root
-  >>= fun dirs ->
-  return @@ Ok dirs
+let gather_all_build_dirs build_dirs =
+  Common.Dirs.gather_all_dirs build_dirs
+  >>| fun dirs ->
+  Ok dirs
 
-let do_repl log_level =
+let do_repl init_script build_dirs log_level =
   let open Deferred.Result.Monad_infix in
   let logger = Common.Logging.create log_level in
   Prj_vagrant.project_root ()
   >>= fun project_root ->
   Common.Dirs.change_to project_root
   >>= fun _ ->
-  gather_dirs @@ Filename.implode [project_root; "_build"; "server"; "lib"]
-  >>= fun proj_dirs ->
-  gather_dirs @@ Filename.implode [project_root; "_build"; "server"; "cmds"]
-  >>= fun cmd_dirs ->
-  repl logger (proj_dirs @ cmd_dirs);
+  gather_all_build_dirs build_dirs
+  >>= fun dirs ->
+  repl logger dirs init_script;
   Log.info logger "Testing complete";
   Common.Logging.flush logger
 
-let monitor_repl log_level () =
+let monitor_repl init_script build_dirs log_level () =
   Common.Cmd.result_guard
-    (fun _ -> do_repl log_level)
+    (fun _ -> do_repl init_script build_dirs log_level)
 
 let spec =
   let open Command.Spec in
   empty
+  +> flag ~aliases:["-i"] "--init" (optional string)
+    ~doc:"init The init script (ml) for the toplevel"
+  +> flag ~aliases:["-d"] "--include-dir" (listed string)
+    ~doc:"include-dir The list of directories to include"
   +> Common.Logging.flag
 
 let name = "repl"
