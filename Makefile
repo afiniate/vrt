@@ -63,5 +63,5 @@ remove:
 	rm $(PREFIX)/bin/vrt
 
 clean:
-	rm $(CURDIR)/opam
+	rm -rf $(CURDIR)/opam
 	rm -rf $(BUILD_DIR)
