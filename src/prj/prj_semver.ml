@@ -59,13 +59,13 @@ let parse ver =
      | None ->
        return @@ Error (Semver_git_describe_parse_failure "none"))
 
-let git_describe () : (String.t, Exn.t) Deferred.Result.t =
+let get_semver () =
   Async_shell.sh_one "git describe --tags --always"
   >>= fun str_opt ->
   parse str_opt
 
 let do_semver () =
-  git_describe ()
+  get_semver ()
   >>|? fun result ->
   print_string result;
   Ok ()
