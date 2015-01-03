@@ -22,7 +22,7 @@ let gather_all_build_dirs build_dirs =
 let do_repl init_script build_dirs log_level =
   let open Deferred.Result.Monad_infix in
   let logger = Common.Logging.create log_level in
-  Prj_vagrant.project_root ()
+  Prj_project_root.find ()
   >>= fun project_root ->
   Common.Dirs.change_to project_root
   >>= fun _ ->

@@ -86,8 +86,8 @@ let write_meta lib_dir name semver desc depends =
 
   let do_make_opam name desc license lib_dir no_meta maintainer author
       homepage bug_reports dev_repo build_cmds install_cmds remove_cmds depends
-      build_depends =
-    Prj_vagrant.project_root ()
+      build_depends root_file =
+    Prj_project_root.find ~dominating:root_file ()
     >>=? fun project_root ->
     Common.Dirs.change_to project_root
     >>=? fun _ ->
@@ -101,11 +101,11 @@ let write_meta lib_dir name semver desc depends =
 
 let monitor_make_opam name (desc:String.t) license lib_dir no_meta maintainer author
     homepage bug_reports dev_repo build_cmds install_cmds remove_cmds (depends: String.t List.t)
-    build_depends () =
+    build_depends root_file () =
   Common.Cmd.result_guard
     (fun _ -> do_make_opam name desc license lib_dir no_meta maintainer author
         homepage bug_reports dev_repo build_cmds install_cmds remove_cmds depends
-        build_depends)
+        build_depends root_file)
 
 let spec =
   let open Command.Spec in
@@ -140,7 +140,8 @@ let spec =
     ~doc:"depends A runtime dependency of the project"
   +> flag ~aliases:["-c"] "--build-depends" (listed string)
     ~doc:"build-depends A build time dependency of the project"
-
+  +> flag "--root-file" (optional_with_default "Makefile" string)
+    ~doc:"root-file The file that identifies the project root. Probably 'Makefile' or 'Vagrantfile'"
 let name = "make-opam"
 
 let command =
