@@ -4,7 +4,7 @@ open Async.Std
 exception Info_no_user
 
 let do_get_user () =
-  match Common.Afiniate.user with
+  match Common.Aws.user with
   | Some user ->
     print_string user;
     return @@ Ok ()
@@ -19,10 +19,10 @@ let spec =
   let open Command.Spec in
   empty
 
-let name = "afiniate-user"
+let name = "aws -user"
 
 let command =
-  Command.async_basic ~summary:"Prints the current afiniate user if available"
+  Command.async_basic ~summary:"Prints the current aws user if available"
     spec
     monitor_get_user
 
