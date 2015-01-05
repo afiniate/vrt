@@ -1,7 +1,7 @@
 open Core.Std
 open Async.Std
 
-type error = No_afiniate_user
+type error = No_aws_user
 exception Copy_error of error
 
 val name: String.t
