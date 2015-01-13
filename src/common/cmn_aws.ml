@@ -8,6 +8,9 @@ type errors =
 
 exception Aws_error of errors with sexp
 
+let user =
+  Sys.getenv "AWS_USER"
+
 let region () =
   (Async_shell.sh_one "grep region ~/.aws/config | awk -F\" \" '{print $3}'")
   >>= function
@@ -30,7 +33,7 @@ let get_env_elements () =
   let open Option.Monad_infix in
   Sys.getenv "HOME"
   >>= fun home ->
-  Cmn_afiniate.user
+  user
   >>| fun user ->
   (home, user)
 

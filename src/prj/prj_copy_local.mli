@@ -1,9 +1,8 @@
 open Core.Std
 open Async.Std
 
-(** A command that provides the users 'afiniate name' to the caller *)
-
-exception Info_no_user
+type error = No_aws_user
+exception Copy_error of error
 
 val name: String.t
 val command: Command.t

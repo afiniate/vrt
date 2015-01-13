@@ -2,7 +2,7 @@ open Core.Std
 open Async.Std
 
 (** Provides a repl that correctly starts an utop repl with all of the
-    voteraise dependencies loaded *)
+    dependencies loaded *)
 
 val name: String.t
 val command: Command.t

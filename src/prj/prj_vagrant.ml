@@ -14,14 +14,7 @@ type cache = {last_start: Time.t;
 type ip = String.t
 
 let project_root () =
-  Sys.getcwd ()
-  >>= fun base_dir ->
-  Prj_common.search_dominating_file ~base_dir ~dominating:"Vagrantfile" ()
-  >>| function
-  | Some path ->
-    Ok (Filename.normalize @@ Filename.make_absolute path)
-  | None ->
-    Error (Vagrant_error No_vagrant_file)
+  Prj_project_root.find ~dominating:"Vagrantfile" ()
 
 let remote_ip () =
   Async_shell.sh_lines "vagrant ssh-config | grep HostName | awk -F\" \" '{print $2}'"

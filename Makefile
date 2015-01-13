@@ -16,7 +16,7 @@
 # =============================================================================
 BUILD_DIR := $(CURDIR)/_build
 
-PREFIX := /usr/bin
+PREFIX := /usr
 
 ### Knobs
 PARALLEL_JOBS ?= 2
@@ -63,4 +63,5 @@ remove:
 	rm $(PREFIX)/bin/vrt
 
 clean:
+	rm -rf $(CURDIR)/opam
 	rm -rf $(BUILD_DIR)
