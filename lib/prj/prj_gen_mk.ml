@@ -40,6 +40,11 @@ BUILD := ocamlbuild -j $(PARALLEL_JOBS) -build-dir $(BUILD_DIR) $(BUILD_FLAGS)
 MOD_DEPS=$(foreach DEP,$(DEPS), --depends $(DEP))
 BUILD_MOD_DEPS=$(foreach DEP,$(BUILD_DEPS), --build-depends $(DEP))
 
+UTOP_MODS=$(foreach DEP,$(DEPS), \\#require \"$(DEP)\";; ) \
+    $(foreach DEP,$(DEPS), \\#require \"$(DEP)\";; )
+
+UTOP_INIT=$(BUILD_DIR)/init.ml
+
 ### Test bits
 TESTS_DIR := $(BUILD_DIR)/tests
 TEST_RUN_SRCS := $(shell find $(CURDIR)/ -name \"*_tests_run.ml\" | grep -v _build)
@@ -113,7 +118,21 @@ test: build unit-test integ-test
 
 unit-test: $(filter %_unit_tests_run, $(TEST_RUN_TARGETS))
 
-integ-test: $(filter %_integ_tests_run, $(TEST_RUN_TARGETS))"
+integ-test: $(filter %_integ_tests_run, $(TEST_RUN_TARGETS))
+
+
+# =============================================================================
+# Support
+# =============================================================================
+$(UTOP_INIT): build
+\t@echo \"$(UTOP_MODS)\" > $(UTOP_INIT)
+\t@echo \"open Core.Std;;\" >> $(UTOP_INIT)
+\t@echo \"open Async.Std;;\" >> $(UTOP_INIT)
+\t@echo '#load \"$(NAME).cma\";;' >> $(UTOP_INIT)
+
+utop: $(UTOP_INIT)
+\tutop -I $(LIB_DIR) -init $(UTOP_INIT)
+"
 
 
 (* Contents of the myocamlbuild generated file *)
