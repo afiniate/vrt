@@ -3,7 +3,7 @@
 set -e
 
 ROOT=$1
-VRT="$ROOT/_build/src/vrt.byte"
+VRT="$ROOT/_build/lib/vrt.byte"
 
 cat <<EOF
 

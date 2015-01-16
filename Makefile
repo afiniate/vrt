@@ -57,7 +57,7 @@ opam:
 	$(CURDIR)/opam.sh $(CURDIR) > opam
 
 install:
-	cp $(BUILD_DIR)/src/vrt.native $(PREFIX)/bin/vrt
+	cp $(BUILD_DIR)/lib/vrt.native $(PREFIX)/bin/vrt
 
 remove:
 	rm $(PREFIX)/bin/vrt
