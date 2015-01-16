@@ -99,6 +99,7 @@ remove:
 \tocamlfind remove $(NAME)
 
 clean:
+\trm -rf $(CLEAN_TARGETS)
 \trm -rf $(BUILD_DIR)
 
 # =============================================================================
