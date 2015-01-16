@@ -13,6 +13,7 @@ let command =
      Prj_make_dot_merlin.desc;
      Prj_make_opam.desc;
      Prj_sync.desc;
-     Prj_semver.desc]
+     Prj_semver.desc;
+     Prj_gen_mk.desc]
 
 let desc = (name, command)
