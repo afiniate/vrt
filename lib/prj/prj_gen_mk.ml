@@ -22,22 +22,28 @@ let makefile = "
 # VARS
 # =============================================================================
 BUILD_DIR := $(CURDIR)/_build
-LIB_DIR := $(BUILD_DIR)/lib
+SOURCE_DIR := lib
+LIB_DIR := $(BUILD_DIR)/$(SOURCE_DIR)
 
 PREFIX := /usr
-
-MOD_DEPS=$(foreach DEP,$(DEPS), --depends $(DEP))
-BUILD_MOD_DEPS=$(foreach DEP,$(DEPS), --build-depends $(DEP))
 
 ### Knobs
 PARALLEL_JOBS ?= 2
 BUILD_FLAGS ?= -use-ocamlfind -cflags -bin-annot -lflags -g
 
 # =============================================================================
-# COMMANDS
+# Useful Vars
 # =============================================================================
 
 BUILD := ocamlbuild -j $(PARALLEL_JOBS) -build-dir $(BUILD_DIR) $(BUILD_FLAGS)
+
+MOD_DEPS=$(foreach DEP,$(DEPS), --depends $(DEP))
+BUILD_MOD_DEPS=$(foreach DEP,$(BUILD_DEPS), --build-depends $(DEP))
+
+UTOP_MODS=$(foreach DEP,$(DEPS), \\#require \"$(DEP)\";; ) \
+    $(foreach DEP,$(DEPS), \\#require \"$(DEP)\";; )
+
+UTOP_INIT=$(BUILD_DIR)/init.ml
 
 ### Test bits
 TESTS_DIR := $(BUILD_DIR)/tests
@@ -79,20 +85,21 @@ metadata:
  --maintainer $(AUTHOR) \
  --bug-reports $(BUG_REPORTS) \
  --build-cmd \"make\" \
- --install-cmd \"make \"install\" \"PREFIX=%{prefix}%\"\" \
- --remove-cmd \"make \"remove\" \"PREFIX=%{prefix}%\"\" \
+ --install-cmd 'make \"install\" \"PREFIX=%{prefix}%\"' \
+ --remove-cmd 'make \"remove\" \"PREFIX=%{prefix}%\"' \
  $(BUILD_MOD_DEPS) $(MOD_DEPS) \
  --desc $(DESC)
 
 install:
 \tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).cmi $(NAME).cmo $(NAME).o \
- $(NAME).cmx $(NAME).mli $(NAME).a \
+ $(NAME).cmx $(NAME).a \
  $(NAME).cmxa
 
 remove:
 \tocamlfind remove $(NAME)
 
 clean:
+\trm -rf $(CLEAN_TARGETS)
 \trm -rf $(BUILD_DIR)
 
 # =============================================================================
@@ -112,7 +119,21 @@ test: build unit-test integ-test
 
 unit-test: $(filter %_unit_tests_run, $(TEST_RUN_TARGETS))
 
-integ-test: $(filter %_integ_tests_run, $(TEST_RUN_TARGETS))"
+integ-test: $(filter %_integ_tests_run, $(TEST_RUN_TARGETS))
+
+
+# =============================================================================
+# Support
+# =============================================================================
+$(UTOP_INIT): build
+\t@echo \"$(UTOP_MODS)\" > $(UTOP_INIT)
+\t@echo \"open Core.Std;;\" >> $(UTOP_INIT)
+\t@echo \"open Async.Std;;\" >> $(UTOP_INIT)
+\t@echo '#load \"$(NAME).cma\";;' >> $(UTOP_INIT)
+
+utop: $(UTOP_INIT)
+\tutop -I $(LIB_DIR) -init $(UTOP_INIT)
+"
 
 
 (* Contents of the myocamlbuild generated file *)
