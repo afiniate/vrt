@@ -45,7 +45,7 @@ let spec =
   let open Command.Spec in
   empty
   +> flag ~aliases:["-l"] "--lib" (listed string)
-    ~doc:"lib A library names to include"
+    ~doc:"lib A library name (package) to include"
   +> flag ~aliases:["-s"] "--source-dir" (listed string)
     ~doc:"source-dir A source directory to include"
   +> flag ~aliases:["-b"] "--build-dir" (listed string)
