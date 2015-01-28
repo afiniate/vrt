@@ -24,6 +24,7 @@ let makefile = "
 BUILD_DIR := $(CURDIR)/_build
 SOURCE_DIR := lib
 LIB_DIR := $(BUILD_DIR)/$(SOURCE_DIR)
+MLIS:=$(foreach f,$(wildcard $(LIB_DIR)/*.mli),$(notdir $f))
 
 PREFIX := /usr
 
@@ -91,9 +92,8 @@ metadata:
  --desc $(DESC)
 
 install:
-\tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).cmi $(NAME).cmo $(NAME).o \
- $(NAME).cmx $(NAME).a \
- $(NAME).cmxa
+\tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).a $(NAME).cma \
+ $(NAME).cmi $(NAME).cmx $(NAME).cmxa $(NAME).cmxs $(MLIS)
 
 remove:
 \tocamlfind remove $(NAME)
