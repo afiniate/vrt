@@ -57,7 +57,7 @@ TEST_RUN_TARGETS:= $(addprefix run-, $(TEST_RUN_EXES))
 # Rules to build the system
 # =============================================================================
 
-.PHONY: all build rebuild opam install unit-test integ-test test \
+.PHONY: all build rebuild metadata install unit-test integ-test test \
         $(TEST_RUN_CMDS)
 
 .PRECIOUS: %/.d
@@ -91,7 +91,7 @@ metadata:
  $(BUILD_MOD_DEPS) $(MOD_DEPS) \
  --desc $(DESC)
 
-install:
+install: metadata
 \tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).a $(NAME).cma \
  $(NAME).cmi $(NAME).cmx $(NAME).cmxa $(NAME).cmxs $(MLIS)
 

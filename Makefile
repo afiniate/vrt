@@ -16,7 +16,7 @@
 # =============================================================================
 BUILD_DIR := $(CURDIR)/_build
 
-PREFIX := /usr
+PREFIX := $(shell dirname $$(dirname $$(which ocamlfind)))
 
 ### Knobs
 PARALLEL_JOBS ?= 2
