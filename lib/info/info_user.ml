@@ -19,7 +19,7 @@ let spec =
   let open Command.Spec in
   empty
 
-let name = "aws -user"
+let name = "aws-user"
 
 let command =
   Command.async_basic ~summary:"Prints the current aws user if available"
