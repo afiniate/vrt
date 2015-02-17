@@ -53,7 +53,7 @@ rebuild: clean all
 build:
 	$(BUILD) vrt.native vrt.byte
 
-opam:
+opam: build
 	$(CURDIR)/opam.sh $(CURDIR) > opam
 
 install:
