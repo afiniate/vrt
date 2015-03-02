@@ -41,8 +41,7 @@ BUILD := ocamlbuild -j $(PARALLEL_JOBS) -build-dir $(BUILD_DIR) $(BUILD_FLAGS)
 MOD_DEPS=$(foreach DEP,$(DEPS), --depends $(DEP))
 BUILD_MOD_DEPS=$(foreach DEP,$(BUILD_DEPS), --build-depends $(DEP))
 
-UTOP_MODS=$(foreach DEP,$(DEPS), \\#require \"$(DEP)\";; ) \
-    $(foreach DEP,$(DEPS), \\#require \"$(DEP)\";; )
+UTOP_MODS=$(foreach DEP,$(DEPS),\\#require \\\"$(DEP)\\\";;)
 
 UTOP_INIT=$(BUILD_DIR)/init.ml
 
