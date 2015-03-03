@@ -135,7 +135,7 @@ utop: $(UTOP_INIT)
 .merlin: build
 \tvrt prj make-dot-merlin \\
 \t\t--build-dir $(BUILD_DIR) \\
-\t\t--lib $(DEPS) \\
+\t\t--lib \"$(DEPS)\" \\
 \t\t--source-dir $(SOURCE_DIR)
 "
 
