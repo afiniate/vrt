@@ -6,8 +6,7 @@ exception Gen_mk_write_error
 
 (* Contents of the generic .mk generated file *)
 
-let makefile = "
-# You can control some aspects of the build with next variables (e.g.
+let makefile = "# You can control some aspects of the build with next variables (e.g.
 # make VARIABLE_NAME=\"some-value\")
 #
 # * PARALLEL_JOBS=N let ocamlbuild run N jobs in parallel. The recommended
@@ -47,7 +46,7 @@ UTOP_INIT=$(BUILD_DIR)/init.ml
 
 ### Test bits
 TESTS_DIR := $(BUILD_DIR)/tests
-TEST_RUN_SRCS := $(shell find $(CURDIR)/ -name \"*_tests_run.ml\" | grep -v _build)
+TEST_RUN_SRCS := $(shell find $(SOURCE_DIR) -name \"*_tests_run.ml\")
 TEST_RUN_EXES := $(notdir $(TEST_RUN_SRCS:%.ml=%))
 TEST_RUN_CMDS := $(addprefix $(TESTS_DIR)/, $(TEST_RUN_EXES))
 TEST_RUN_TARGETS:= $(addprefix run-, $(TEST_RUN_EXES))
@@ -136,7 +135,7 @@ utop: $(UTOP_INIT)
 .merlin: build
 \tvrt prj make-dot-merlin \\
 \t\t--build-dir $(BUILD_DIR) \\
-\t\t--lib $(DEPS) \\
+\t\t--lib \"$(DEPS)\" \\
 \t\t--source-dir $(SOURCE_DIR)
 "
 
