@@ -46,7 +46,7 @@ UTOP_INIT=$(BUILD_DIR)/init.ml
 
 ### Test bits
 TESTS_DIR := $(BUILD_DIR)/tests
-TEST_RUN_SRCS := $(shell find $(CURDIR)/ -name \"*_tests_run.ml\" | grep -v _build)
+TEST_RUN_SRCS := $(shell find $(SOURCE_DIR) -name \"*_tests_run.ml\")
 TEST_RUN_EXES := $(notdir $(TEST_RUN_SRCS:%.ml=%))
 TEST_RUN_CMDS := $(addprefix $(TESTS_DIR)/, $(TEST_RUN_EXES))
 TEST_RUN_TARGETS:= $(addprefix run-, $(TEST_RUN_EXES))
