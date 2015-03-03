@@ -6,8 +6,7 @@ exception Gen_mk_write_error
 
 (* Contents of the generic .mk generated file *)
 
-let makefile = "
-# You can control some aspects of the build with next variables (e.g.
+let makefile = "# You can control some aspects of the build with next variables (e.g.
 # make VARIABLE_NAME=\"some-value\")
 #
 # * PARALLEL_JOBS=N let ocamlbuild run N jobs in parallel. The recommended
