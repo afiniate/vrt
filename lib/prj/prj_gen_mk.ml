@@ -73,7 +73,7 @@ rebuild: clean all
 build:
 \t$(BUILD) $(NAME).cma $(NAME).cmx $(NAME).cmxa $(NAME).a $(NAME).cmxs
 
-metadata:
+metadata: build
 \tvrt prj make-opam \
  --homepage $(HOMEPAGE) \
  --dev-repo $(DEV_REPO) \
