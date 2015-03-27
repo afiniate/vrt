@@ -108,14 +108,6 @@ let do_make_opam
       ~homepage ~bug_reports ~dev_repo ~build_cmds ~install_cmds ~remove_cmds
       ~depends ~build_depends
 
-let monitor_make_opam name target_dir license lib_dir maintainer author
-    homepage bug_reports dev_repo build_cmds install_cmds remove_cmds depends
-    build_depends root_file () =
-  Common.Cmd.result_guard
-    (fun _ -> do_make_opam name target_dir license lib_dir maintainer author
-        homepage bug_reports dev_repo build_cmds install_cmds remove_cmds depends
-        build_depends root_file)
-
 let spec =
   let open Command.Spec in
   empty
@@ -155,6 +147,13 @@ let name = "make-opam"
 let command: Command.t =
   Command.async_basic ~summary:"Generates a valid `opam` and `META` filey"
     spec
-    monitor_make_opam
+    (fun name target_dir license lib_dir maintainer author
+      homepage bug_reports dev_repo build_cmds install_cmds remove_cmds depends
+      build_depends root_file () ->
+      Common.Cmd.result_guard
+        (fun _ -> do_make_opam ~name ~target_dir ~license ~lib_dir
+            ~maintainer ~author ~homepage ~bug_reports ~dev_repo ~build_cmds
+            ~install_cmds ~remove_cmds ~depends ~build_depends ~root_file))
+
 
 let desc: String.t * Command.t = (name, command)

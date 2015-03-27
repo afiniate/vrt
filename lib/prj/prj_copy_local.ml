@@ -9,7 +9,7 @@ let do_scp logger identity ip target remote =
   >>= fun _ ->
   return @@ Ok ()
 
-let do_copy log_level target remote =
+let do_copy ~log_level ~target ~remote =
   let open Deferred.Result.Monad_infix in
   let logger = Common.Logging.create log_level in
   let actual_target = match target with
@@ -33,10 +33,6 @@ let do_copy log_level target remote =
   Log.info logger "Copy complete to %s" actual_target;
   Common.Logging.flush logger
 
-let monitor_copy log_level target remote () =
-  Common.Cmd.result_guard
-    (fun _ -> do_copy log_level target remote)
-
 let spec =
   let open Command.Spec in
   empty
@@ -48,8 +44,11 @@ let spec =
 let name = "copy-local"
 
 let command =
-  Command.async_basic ~summary:"Copies a remote file to the local disk if it exists"
+  Command.async_basic
+    ~summary:"Copies a remote file to the local disk if it exists"
     spec
-    monitor_copy
+    (fun log_level target remote () ->
+       Common.Cmd.result_guard
+         (fun _ -> do_copy ~log_level ~target ~remote))
 
 let desc = (name, command)

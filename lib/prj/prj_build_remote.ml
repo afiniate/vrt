@@ -25,7 +25,7 @@ let do_ssh logger identity ip area command =
   >>| fun _ ->
   Ok ()
 
-let do_build log_level area cmd =
+let do_build ~log_level ~area ~cmd =
   let logger = Common.Logging.create log_level in
   Prj_vagrant.project_root ()
   >>=? fun project_root ->
@@ -47,10 +47,6 @@ let do_build log_level area cmd =
   do_ssh logger identity ip' area cmd
   >>=? fun _ ->
   Common.Logging.flush logger
-
-let monitor_build log_level area cmd () =
-  Common.Cmd.result_guard
-    (fun _ -> do_build log_level area cmd)
 
 let area_arg =
   Command.Spec.Arg_type.create
@@ -75,6 +71,8 @@ let command =
   Command.async_basic ~summary:"Builds the project on the remote vagrant box"
     ~readme
     spec
-    monitor_build
+    (fun log_level area cmd () ->
+       Common.Cmd.result_guard
+         (fun _ -> do_build ~log_level ~area ~cmd))
 
 let desc = (name, command)
