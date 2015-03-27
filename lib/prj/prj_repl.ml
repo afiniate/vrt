@@ -19,7 +19,7 @@ let gather_all_build_dirs build_dirs =
   >>| fun dirs ->
   Ok dirs
 
-let do_repl init_script build_dirs log_level =
+let do_repl ~init_script ~build_dirs ~log_level =
   let open Deferred.Result.Monad_infix in
   let logger = Common.Logging.create log_level in
   Prj_project_root.find ()
@@ -31,10 +31,6 @@ let do_repl init_script build_dirs log_level =
   repl logger dirs init_script;
   Log.info logger "Testing complete";
   Common.Logging.flush logger
-
-let monitor_repl init_script build_dirs log_level () =
-  Common.Cmd.result_guard
-    (fun _ -> do_repl init_script build_dirs log_level)
 
 let spec =
   let open Command.Spec in
@@ -50,6 +46,8 @@ let name = "repl"
 let command =
   Command.async_basic ~summary:"Runs a repl with everyhing needed for the project already loaded"
     spec
-    monitor_repl
+    (fun init_script build_dirs log_level () ->
+       Common.Cmd.result_guard
+         (fun _ -> do_repl ~init_script ~build_dirs ~log_level))
 
 let desc = (name, command)

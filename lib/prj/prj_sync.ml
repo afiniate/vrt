@@ -1,7 +1,7 @@
 open Core.Std
 open Async.Std
 
-let do_sync log_level =
+let do_sync ~log_level =
   let open Deferred.Result.Monad_infix in
   let logger = Common.Logging.create log_level in
   Prj_vagrant.project_root ()
@@ -20,10 +20,6 @@ let do_sync log_level =
   >>= fun _ ->
   Common.Logging.flush logger
 
-let monitor_sync log_level () =
-  Common.Cmd.result_guard
-    (fun _ -> do_sync log_level)
-
 let spec =
   let open Command.Spec in
   empty
@@ -34,6 +30,10 @@ let name = "sync"
 let command =
   Command.async_basic ~summary:"Syncs the local project dir to the remote vagrant host"
     spec
-    monitor_sync
+    (fun log_level () ->
+       Common.Cmd.result_guard
+         (fun _ -> do_sync ~log_level))
+
+
 
 let desc = (name, command)

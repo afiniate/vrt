@@ -70,10 +70,6 @@ let do_semver () =
   print_string result;
   Ok ()
 
-let monitor_semver () =
-  Common.Cmd.result_guard
-    (fun _ -> do_semver ())
-
 let spec =
   let open Command.Spec in
   empty
@@ -83,6 +79,8 @@ let name = "semver"
 let command =
   Command.async_basic ~summary:"Parse git repo information into a semantic version"
     spec
-    monitor_semver
+    (fun () ->
+       Common.Cmd.result_guard
+           (fun _ -> do_semver ()))
 
 let desc = (name, command)

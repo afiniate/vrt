@@ -8,7 +8,7 @@ let mosh logger identity ip =
            "mosh ubuntu@" ^ ip ^ " --ssh=\"ssh -i " ^ identity ^"\""]
     ()
 
-let do_mosh log_level =
+let do_mosh ~log_level =
   let open Deferred.Result.Monad_infix in
   let logger = Common.Logging.create log_level in
   Prj_vagrant.project_root ()
@@ -25,11 +25,6 @@ let do_mosh log_level =
   >>| fun _ ->
   Ok (mosh logger identity ip)
 
-
-let monitor_mosh log_level () =
-  Common.Cmd.result_guard
-    (fun _ -> do_mosh log_level)
-
 let spec =
   let open Command.Spec in
   empty
@@ -40,6 +35,8 @@ let name = "mosh"
 let command =
   Command.async_basic ~summary:"Run mosh to access the remote host"
     spec
-    monitor_mosh
+    (fun log_level () ->
+       Common.Cmd.result_guard
+         (fun _ -> do_mosh ~log_level))
 
 let desc = (name, command)
