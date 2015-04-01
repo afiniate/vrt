@@ -1,10 +1,5 @@
 true: syntax(camlp4o)
 
-<common>: include
-<prj>: include
-<opam>: include
-<info>: include
-
 <*>: thread, package(core), package(async), package(async_unix)
 <*>: package(async_extra), package(sexplib.syntax), package(sexplib)
 <*>: package(async_shell), package(core_extended), package(async_find)

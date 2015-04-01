@@ -17,7 +17,7 @@ let do_cmd cmd () =
   >>= fun _ ->
   return @@ Ok ()
 
-let do_test log_level cmd =
+let do_test ~log_level ~cmd =
   let open Deferred.Result.Monad_infix in
   let logger = Common.Logging.create log_level in
   Prj_vagrant.project_root ()
@@ -31,10 +31,6 @@ let do_test log_level cmd =
   Log.info logger "Testing complete";
   Common.Logging.flush logger
 
-let monitor_test log_level cmd () =
-  Common.Cmd.result_guard
-    (fun _ -> do_test log_level cmd)
-
 let spec =
   let open Command.Spec in
   empty
@@ -44,8 +40,11 @@ let spec =
 let name = "with-dynamodb"
 
 let command =
-  Command.async_basic ~summary:"Run the provided command (probably a test) with dynamodb"
+  Command.async_basic
+    ~summary:"Run the provided command (probably a test) with dynamodb"
     spec
-    monitor_test
+    (fun log_level cmd () ->
+       Common.Cmd.result_guard
+         (fun _ -> do_test ~log_level ~cmd))
 
 let desc = (name, command)

@@ -56,7 +56,7 @@ TEST_RUN_TARGETS:= $(addprefix run-, $(TEST_RUN_EXES))
 # =============================================================================
 
 .PHONY: all build rebuild metadata install unit-test integ-test test \
-        $(TEST_RUN_CMDS)
+                $(TEST_RUN_CMDS)
 
 .PRECIOUS: %/.d
 
@@ -73,8 +73,8 @@ rebuild: clean all
 build:
 \t$(BUILD) $(NAME).cma $(NAME).cmx $(NAME).cmxa $(NAME).a $(NAME).cmxs
 
-metadata:
-\tvrt prj make-opam \
+metadata: build
+\tvrt opam make-opam \
  --homepage $(HOMEPAGE) \
  --dev-repo $(DEV_REPO) \
  --lib-dir $(LIB_DIR) \
@@ -91,7 +91,7 @@ metadata:
 
 install: metadata
 \tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).a $(NAME).cma \
- $(NAME).cmi $(NAME).cmx $(NAME).cmxa $(NAME).cmxs $(MLIS)
+                $(NAME).cmi $(NAME).cmx $(NAME).cmxa $(NAME).cmxs $(MLIS)
 
 remove:
 \tocamlfind remove $(NAME)
@@ -188,18 +188,15 @@ let write root filename contents =
   with exn ->
     return @@ Result.Error Gen_mk_write_error
 
-let mk plugins =
-   Prj_project_root.find ~dominating:"Makefile" ()
-   >>=? fun project_root ->
-   write project_root "vrt.mk" makefile
-   >>=? fun _ ->
-   if List.mem plugins "atdgen" then
-     write project_root "myocamlbuild.ml" myocamlbuild
-   else
-     return @@ Ok ()
-
-let mk_cmd plugins () =
-  Common.Cmd.result_guard (fun _ -> mk plugins)
+let mk ~plugins =
+  Prj_project_root.find ~dominating:"Makefile" ()
+  >>=? fun project_root ->
+  write project_root "vrt.mk" makefile
+  >>=? fun _ ->
+  if List.mem plugins "atdgen" then
+    write project_root "myocamlbuild.ml" myocamlbuild
+  else
+    return @@ Ok ()
 
 let spec =
   let open Command.Spec in
@@ -213,6 +210,9 @@ let command =
   Command.async_basic
     ~summary:"Generates `vrt.mk` file in the root of the project directory"
     spec
-    mk_cmd
+    (fun plugins () ->
+       Common.Cmd.result_guard (fun _ -> mk ~plugins))
+
+
 
 let desc = (name, command)
