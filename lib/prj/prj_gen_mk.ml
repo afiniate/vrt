@@ -34,7 +34,7 @@ BUILD_FLAGS ?= -use-ocamlfind -cflags -bin-annot -lflags -g
 # =============================================================================
 # Useful Vars
 # =============================================================================
-
+SEMVER := $(shell vrt prj semver)
 BUILD := ocamlbuild -j $(PARALLEL_JOBS) -build-dir $(BUILD_DIR) $(BUILD_FLAGS)
 
 MOD_DEPS=$(foreach DEP,$(DEPS), --depends $(DEP))
@@ -73,8 +73,17 @@ rebuild: clean all
 build:
 \t$(BUILD) $(NAME).cma $(NAME).cmx $(NAME).cmxa $(NAME).a $(NAME).cmxs
 
-metadata: build
-\tvrt opam make-opam \
+metadata:
+\tvrt prj make-meta \
+ --target-dir $(BUILD_DIR) \
+ --root-file vrt.mk \
+ --description-file '$(DESC_FILE)' \
+ $(BUILD_MOD_DEPS) $(MOD_DEPS)
+
+prepare: build
+\tvrt opam prepare \
+ --organization $(ORGANIZATION) \
+ --target-dir $(BUILD_DIR) \
  --homepage $(HOMEPAGE) \
  --dev-repo $(DEV_REPO) \
  --lib-dir $(LIB_DIR) \
@@ -87,11 +96,14 @@ metadata: build
  --install-cmd 'make \"install\" \"PREFIX=%{prefix}%\"' \
  --remove-cmd 'make \"remove\" \"PREFIX=%{prefix}%\"' \
  $(BUILD_MOD_DEPS) $(MOD_DEPS) \
- --desc $(DESC)
+ --description-file '$(DESC_FILE)'
 
 install: metadata
 \tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).a $(NAME).cma \
                 $(NAME).cmi $(NAME).cmx $(NAME).cmxa $(NAME).cmxs $(MLIS)
+
+submit: prepare
+\topam-publish submit $(BUILD_DIR)/$(NAME).$(SEMVER)
 
 remove:
 \tocamlfind remove $(NAME)
@@ -99,6 +111,8 @@ remove:
 clean:
 \trm -rf $(CLEAN_TARGETS)
 \trm -rf $(BUILD_DIR)
+\trm -rf vrt.mk
+
 
 # =============================================================================
 # Rules for testing

@@ -45,13 +45,13 @@ let make_optional_field
     | None -> ""
 
 let write_opam
-  : target_dir:String.t -> name:String.t -> semver:String.t
+  : target_dir:String.t
   -> license:String.t -> maintainer:String.t Option.t -> author:String.t Option.t
   -> homepage:String.t Option.t -> bug_reports:String.t Option.t -> dev_repo:String.t
   -> build_cmds:String.t List.t -> install_cmds:String.t List.t
   -> remove_cmds:String.t List.t -> depends:String.t List.t
   -> build_depends:String.t List.t -> (Unit.t, Exn.t) Deferred.Result.t =
-  fun ~target_dir ~name ~semver ~license ~maintainer
+  fun ~target_dir ~license ~maintainer
     ~author ~homepage ~bug_reports ~dev_repo ~build_cmds ~install_cmds
     ~remove_cmds ~depends ~build_depends ->
     let maintainer_str = make_optional_field ~name:"maintainer" maintainer in
@@ -59,8 +59,6 @@ let write_opam
     let homepage_str = make_optional_field ~name:"homepage" homepage in
     let bug_str = make_optional_field ~name:"bug-reports" bug_reports in
     let contents = "opam-version: \"1.2\"\n" ^
-                   "name: \"" ^ name ^ "\"\n" ^
-                   "version: \"" ^ semver ^ "\"\n" ^
                    maintainer_str ^
                    author_str ^
                    homepage_str ^
@@ -87,7 +85,7 @@ let get_target_dir
       Prj_project_root.find ~dominating:root_file ()
 
 let do_make_opam
-  : name:String.t -> target_dir:String.t Option.t
+  : target_dir:String.t Option.t
   -> license:String.t -> lib_dir:String.t -> maintainer:String.t Option.t
   -> author:String.t Option.t -> homepage:String.t Option.t
   -> bug_reports:String.t Option.t -> dev_repo:String.t
@@ -95,24 +93,20 @@ let do_make_opam
   -> remove_cmds:String.t List.t -> depends:String.t List.t
   -> build_depends:String.t List.t -> root_file:String.t
   -> (Unit.t, Exn.t) Deferred.Result.t =
-  fun ~name ~target_dir ~license ~lib_dir ~maintainer ~author
+  fun ~target_dir ~license ~lib_dir ~maintainer ~author
     ~homepage ~bug_reports ~dev_repo ~build_cmds ~install_cmds ~remove_cmds
     ~depends ~build_depends ~root_file ->
   get_target_dir ~target_dir ~root_file
   >>=? fun opam_root ->
-  Common.Dirs.change_to opam_root
+  Vrt_common.Dirs.change_to opam_root
   >>=? fun _ ->
-  Prj_semver.get_semver ()
-  >>=? fun semver ->
-  write_opam ~target_dir:opam_root ~name ~semver ~license ~maintainer ~author
+  write_opam ~target_dir:opam_root ~license ~maintainer ~author
       ~homepage ~bug_reports ~dev_repo ~build_cmds ~install_cmds ~remove_cmds
       ~depends ~build_depends
 
 let spec =
   let open Command.Spec in
   empty
-  +> flag ~aliases:["-n"] "--name" (required string)
-    ~doc:"name The name of the project"
   +> flag ~aliases:["-t"] "--target-dir" (optional string)
     ~doc:"target-dir The directory in which to generate the opam file"
   +> flag ~aliases:["-l"] "--license" (required string)
@@ -147,11 +141,11 @@ let name = "make-opam"
 let command: Command.t =
   Command.async_basic ~summary:"Generates a valid `opam` and `META` filey"
     spec
-    (fun name target_dir license lib_dir maintainer author
+    (fun target_dir license lib_dir maintainer author
       homepage bug_reports dev_repo build_cmds install_cmds remove_cmds depends
       build_depends root_file () ->
-      Common.Cmd.result_guard
-        (fun _ -> do_make_opam ~name ~target_dir ~license ~lib_dir
+      Vrt_common.Cmd.result_guard
+        (fun _ -> do_make_opam ~target_dir ~license ~lib_dir
             ~maintainer ~author ~homepage ~bug_reports ~dev_repo ~build_cmds
             ~install_cmds ~remove_cmds ~depends ~build_depends ~root_file))
 
