@@ -5,7 +5,7 @@ open Async.Std
 exception Dot_merlin_write_error
 
 let gather_dirs prefix dirs =
-  Common.Dirs.gather_all_dirs dirs
+  Vrt_common.Dirs.gather_all_dirs dirs
   >>| fun gathered_dirs ->
   Ok (List.fold ~init:"" ~f:(fun acc dir ->
       acc ^ prefix ^ " " ^ dir ^ "\n") gathered_dirs)
@@ -56,7 +56,7 @@ let command =
     ~summary:"Generates a valid `.merlin` file in the root of the project directory"
     spec
     (fun active_libs source_dirs build_dirs root_file () ->
-       Common.Cmd.result_guard
+       Vrt_common.Cmd.result_guard
          (fun _ ->
             do_dot_merlin
               ~active_libs

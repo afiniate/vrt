@@ -40,13 +40,15 @@ let write_meta target_dir name semver desc depends =
                  "exists_if = \""^ name ^ ".cma\"\n" in
   Afin.Files.dump ~dir:target_dir ~name:"META" ~contents
 
-let do_make_meta ~name ~desc ~target_dir ~depends ~root_file =
+let do_make_meta ~name ~description_file ~target_dir ~depends ~root_file =
   Prj_project_root.find ~dominating:root_file ()
   >>=? fun project_root ->
-  Common.Dirs.change_to project_root
+  Vrt_common.Dirs.change_to project_root
   >>=? fun _ ->
   Prj_semver.get_semver ()
   >>=? fun semver ->
+  Reader.file_contents description_file
+  >>= fun desc ->
   write_meta target_dir name semver desc depends
 
 let spec =
@@ -54,7 +56,7 @@ let spec =
   empty
   +> flag ~aliases:["-n"] "--name" (required string)
     ~doc:"name The name of the project"
-  +> flag ~aliases:["-s"] "--desc" (required string)
+  +> flag ~aliases:["-s"] "--description-file" (required string)
     ~doc:"desc A short description of the project"
   +> flag ~aliases:["-z"] "--target-dir" (required string)
     ~doc:"target-dir The directory in which to generate the opam file"
@@ -68,8 +70,8 @@ let name = "make-meta"
 let command =
   Command.async_basic ~summary:"Generates a valid `META` file"
     spec
-    (fun name desc target_dir depends root_file () ->
-       Common.Cmd.result_guard
-        (fun _ -> do_make_meta ~name ~desc ~target_dir ~depends ~root_file))
+    (fun name description_file target_dir depends root_file () ->
+       Vrt_common.Cmd.result_guard
+        (fun _ -> do_make_meta ~name ~description_file ~target_dir ~depends ~root_file))
 
 let desc = (name, command)

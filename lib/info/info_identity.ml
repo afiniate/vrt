@@ -3,13 +3,13 @@ open Async.Std
 
 let do_identity () =
   let open Deferred.Result.Monad_infix in
-  Common.Aws.identity ()
+  Vrt_common.Aws.identity ()
   >>= fun identity ->
   print_string identity;
   return @@ Ok ()
 
 let monitor_identity () =
-  Common.Cmd.result_guard
+  Vrt_common.Cmd.result_guard
     (fun _ -> do_identity ())
 
 let spec =

@@ -80,7 +80,7 @@ let command =
   Command.async_basic ~summary:"Parse git repo information into a semantic version"
     spec
     (fun () ->
-       Common.Cmd.result_guard
+       Vrt_common.Cmd.result_guard
            (fun _ -> do_semver ()))
 
 let desc = (name, command)
