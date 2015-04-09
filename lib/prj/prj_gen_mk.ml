@@ -55,8 +55,9 @@ TEST_RUN_TARGETS:= $(addprefix run-, $(TEST_RUN_EXES))
 # Rules to build the system
 # =============================================================================
 
-.PHONY: all build rebuild metadata install unit-test integ-test test \
-                $(TEST_RUN_CMDS)
+.PHONY: all build rebuild metadata prepare submit install unit-test \
+        integ-test test remove clean \
+        $(TEST_RUN_CMDS)
 
 .PRECIOUS: %/.d
 
