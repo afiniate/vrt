@@ -75,10 +75,11 @@ build:
 
 metadata:
 \tvrt prj make-meta \
+ --name $(NAME) \
  --target-dir $(BUILD_DIR) \
  --root-file vrt.mk \
  --description-file '$(DESC_FILE)' \
- $(BUILD_MOD_DEPS) $(MOD_DEPS)
+ $(MOD_DEPS)
 
 prepare: build
 \tvrt opam prepare \
