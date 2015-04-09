@@ -22,7 +22,7 @@ let write_opam
     ~remove_cmds ~depends ~build_depends ->
     Opam_make_opam.write_opam ~target_dir ~license ~maintainer
     ~author ~homepage ~bug_reports ~dev_repo ~build_cmds ~install_cmds
-    ~remove_cmds ~depends ~build_depends
+    ~remove_cmds ~depends ~build_depends ()
 
 let write_description
   : opam_dir:String.t -> description_file:String.t -> (Unit.t, Exn.t) Deferred.Result.t =

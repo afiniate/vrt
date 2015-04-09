@@ -57,6 +57,8 @@ TEST_RUN_TARGETS:= $(addprefix run-, $(TEST_RUN_EXES))
 
 .PHONY: all build rebuild metadata prepare submit install unit-test \
         integ-test test remove clean \
+        opam unpin-repo pin-repo install-local-opam \
+        install-library install-extra \
         $(TEST_RUN_CMDS)
 
 .PRECIOUS: %/.d
@@ -77,10 +79,41 @@ build:
 metadata:
 \tvrt prj make-meta \
  --name $(NAME) \
- --target-dir $(BUILD_DIR) \
+ --target-dir $(LIB_DIR) \
  --root-file vrt.mk \
+ --semver $(SEMVER) \
  --description-file '$(DESC_FILE)' \
  $(MOD_DEPS)
+
+# This is only used to help during local opam package
+# development
+opam: build
+\tvrt opam make-opam \
+ --target-dir $(CURDIR) \
+ --name $(NAME) \
+ --semver $(SEMVER) \
+ --homepage $(HOMEPAGE) \
+ --dev-repo $(DEV_REPO) \
+ --lib-dir $(LIB_DIR) \
+ --license $(LICENSE) \
+ --author $(AUTHOR) \
+ --maintainer $(AUTHOR) \
+ --bug-reports $(BUG_REPORTS) \
+ --build-cmd \"make\" \
+ --install-cmd 'make \"install\" \"PREFIX=%{prefix}%\" \"SEMVER=%{aws_async:version}%\"' \
+ --remove-cmd 'make \"remove\" \"PREFIX=%{prefix}%\"' \
+ $(BUILD_MOD_DEPS) $(MOD_DEPS) \
+
+
+unpin-repo:
+\topam pin remove -y $(NAME)
+
+pin-repo:
+\topam pin add -y $(NAME) $(CURDIR)
+
+install-local-opam: pin-repo opam
+\topam remove $(NAME); \
+ opam install $(NAME)
 
 prepare: build
 \tvrt opam prepare \
