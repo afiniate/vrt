@@ -23,7 +23,6 @@ let makefile = "# You can control some aspects of the build with next variables 
 BUILD_DIR := $(CURDIR)/_build
 SOURCE_DIR := lib
 LIB_DIR := $(BUILD_DIR)/$(SOURCE_DIR)
-MLIS:=$(foreach f,$(wildcard $(LIB_DIR)/*.mli),$(notdir $f))
 
 PREFIX := /usr
 
@@ -134,8 +133,12 @@ prepare: build
  --description-file '$(DESC_FILE)'
 
 install: metadata
-\tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).a $(NAME).cma \
-                $(NAME).cmi $(NAME).cmx $(NAME).cmxa $(NAME).cmxs $(MLIS)
+\tcd $(LIB_DIR); ocamlfind install $(NAME) META \
+ `find ./  -name \"*.cmi\" -o -name \"*.cmo\" \
+  -o -name \"*.o\" -o -name \"*.cmx\" -o -name \"*.cmxa\" \
+  -o -name \"*.cmxs\" -o -name \"*.a\" \
+  -o -name \"*.cma\"`
+
 
 submit: prepare
 \topam-publish submit $(BUILD_DIR)/$(NAME).$(SEMVER)
