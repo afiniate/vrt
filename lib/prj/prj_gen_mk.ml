@@ -73,7 +73,7 @@ all: build
 rebuild: clean all
 
 build:
-\t$(BUILD) $(NAME).cma $(NAME).cmx $(NAME).cmxa $(NAME).a $(NAME).cmxs
+\t$(BUILD) $(NAME).cma $(NAME).cmx $(NAME).cmxa $(NAME).a $(NAME).cmxs $(EXTRA_TARGETS)
 
 metadata:
 \tvrt prj make-meta \
@@ -110,7 +110,7 @@ unpin-repo:
 pin-repo:
 \topam pin add -y $(NAME) $(CURDIR)
 
-install-local-opam: pin-repo opam
+install-local-opam: opam pin-repo
 \topam remove $(NAME); \
  opam install $(NAME)
 
@@ -132,13 +132,14 @@ prepare: build
  $(BUILD_MOD_DEPS) $(MOD_DEPS) \
  --description-file '$(DESC_FILE)'
 
-install: metadata
+install-library: metadata
 \tcd $(LIB_DIR); ocamlfind install $(NAME) META \
  `find ./  -name \"*.cmi\" -o -name \"*.cmo\" \
   -o -name \"*.o\" -o -name \"*.cmx\" -o -name \"*.cmxa\" \
   -o -name \"*.cmxs\" -o -name \"*.a\" \
   -o -name \"*.cma\"`
 
+install: install-library install-extra
 
 submit: prepare
 \topam-publish submit $(BUILD_DIR)/$(NAME).$(SEMVER)
