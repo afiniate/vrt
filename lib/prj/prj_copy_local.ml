@@ -9,9 +9,9 @@ let do_scp logger identity ip target remote =
   >>= fun _ ->
   return @@ Ok ()
 
-let do_copy log_level target remote =
+let do_copy ~log_level ~target ~remote =
   let open Deferred.Result.Monad_infix in
-  let logger = Common.Logging.create log_level in
+  let logger = Vrt_common.Logging.create log_level in
   let actual_target = match target with
     | Some target -> target
     | None -> "." in
@@ -19,28 +19,24 @@ let do_copy log_level target remote =
   >>= fun project_root ->
   Log.info logger "Project root is %s" project_root;
   Log.info logger "Starting vagrant ...";
-  Common.Logging.flush logger
+  Vrt_common.Logging.flush logger
   >>= fun _ ->
   Prj_vagrant.start_vagrant project_root
   >>= fun ip ->
   Log.info logger "Remote IP is %s" ip;
   Log.info logger "Getting identity ";
-  Common.Aws.identity ()
+  Vrt_common.Aws.identity ()
   >>= fun identity ->
   Log.info logger "Doing copy";
   do_scp logger identity ip actual_target remote
   >>= fun _ ->
   Log.info logger "Copy complete to %s" actual_target;
-  Common.Logging.flush logger
-
-let monitor_copy log_level target remote () =
-  Common.Cmd.result_guard
-    (fun _ -> do_copy log_level target remote)
+  Vrt_common.Logging.flush logger
 
 let spec =
   let open Command.Spec in
   empty
-  +> Common.Logging.flag
+  +> Vrt_common.Logging.flag
   +> flag ~aliases:["-t"] "--target" (optional string)
     ~doc:"the local target file or directory that the remote file will be copied into"
   +> anon ("remote" %: string)
@@ -48,8 +44,11 @@ let spec =
 let name = "copy-local"
 
 let command =
-  Command.async_basic ~summary:"Copies a remote file to the local disk if it exists"
+  Command.async_basic
+    ~summary:"Copies a remote file to the local disk if it exists"
     spec
-    monitor_copy
+    (fun log_level target remote () ->
+       Vrt_common.Cmd.result_guard
+         (fun _ -> do_copy ~log_level ~target ~remote))
 
 let desc = (name, command)

@@ -23,7 +23,6 @@ let makefile = "# You can control some aspects of the build with next variables 
 BUILD_DIR := $(CURDIR)/_build
 SOURCE_DIR := lib
 LIB_DIR := $(BUILD_DIR)/$(SOURCE_DIR)
-MLIS:=$(foreach f,$(wildcard $(LIB_DIR)/*.mli),$(notdir $f))
 
 PREFIX := /usr
 
@@ -34,7 +33,7 @@ BUILD_FLAGS ?= -use-ocamlfind -cflags -bin-annot -lflags -g
 # =============================================================================
 # Useful Vars
 # =============================================================================
-
+SEMVER := $(shell vrt prj semver)
 BUILD := ocamlbuild -j $(PARALLEL_JOBS) -build-dir $(BUILD_DIR) $(BUILD_FLAGS)
 
 MOD_DEPS=$(foreach DEP,$(DEPS), --depends $(DEP))
@@ -55,7 +54,10 @@ TEST_RUN_TARGETS:= $(addprefix run-, $(TEST_RUN_EXES))
 # Rules to build the system
 # =============================================================================
 
-.PHONY: all build rebuild metadata install unit-test integ-test test \
+.PHONY: all build rebuild metadata prepare submit install unit-test \
+        integ-test test remove clean \
+        opam unpin-repo pin-repo install-local-opam \
+        install-library install-extra \
         $(TEST_RUN_CMDS)
 
 .PRECIOUS: %/.d
@@ -71,10 +73,51 @@ all: build
 rebuild: clean all
 
 build:
-\t$(BUILD) $(NAME).cma $(NAME).cmx $(NAME).cmxa $(NAME).a $(NAME).cmxs
+\t$(BUILD) $(NAME).cma $(NAME).cmx $(NAME).cmxa $(NAME).a $(NAME).cmxs $(EXTRA_TARGETS)
 
 metadata:
-\tvrt prj make-opam \
+\tvrt prj make-meta \
+ --name $(NAME) \
+ --target-dir $(LIB_DIR) \
+ --root-file vrt.mk \
+ --semver $(SEMVER) \
+ --description-file '$(DESC_FILE)' \
+ $(MOD_DEPS)
+
+# This is only used to help during local opam package
+# development
+opam: build
+\tvrt opam make-opam \
+ --target-dir $(CURDIR) \
+ --name $(NAME) \
+ --semver $(SEMVER) \
+ --homepage $(HOMEPAGE) \
+ --dev-repo $(DEV_REPO) \
+ --lib-dir $(LIB_DIR) \
+ --license $(LICENSE) \
+ --author $(AUTHOR) \
+ --maintainer $(AUTHOR) \
+ --bug-reports $(BUG_REPORTS) \
+ --build-cmd \"make\" \
+ --install-cmd 'make \"install\" \"PREFIX=%{prefix}%\" \"SEMVER=%{aws_async:version}%\"' \
+ --remove-cmd 'make \"remove\" \"PREFIX=%{prefix}%\"' \
+ $(BUILD_MOD_DEPS) $(MOD_DEPS) \
+
+
+unpin-repo:
+\topam pin remove -y $(NAME)
+
+pin-repo:
+\topam pin add -y $(NAME) $(CURDIR)
+
+install-local-opam: opam pin-repo
+\topam remove $(NAME); \
+ opam install $(NAME)
+
+prepare: build
+\tvrt opam prepare \
+ --organization $(ORGANIZATION) \
+ --target-dir $(BUILD_DIR) \
  --homepage $(HOMEPAGE) \
  --dev-repo $(DEV_REPO) \
  --lib-dir $(LIB_DIR) \
@@ -87,11 +130,19 @@ metadata:
  --install-cmd 'make \"install\" \"PREFIX=%{prefix}%\"' \
  --remove-cmd 'make \"remove\" \"PREFIX=%{prefix}%\"' \
  $(BUILD_MOD_DEPS) $(MOD_DEPS) \
- --desc $(DESC)
+ --description-file '$(DESC_FILE)'
 
-install: metadata
-\tcd $(LIB_DIR); ocamlfind install $(NAME) META $(NAME).a $(NAME).cma \
- $(NAME).cmi $(NAME).cmx $(NAME).cmxa $(NAME).cmxs $(MLIS)
+install-library: metadata
+\tcd $(LIB_DIR); ocamlfind install $(NAME) META \
+ `find ./  -name \"*.cmi\" -o -name \"*.cmo\" \
+  -o -name \"*.o\" -o -name \"*.cmx\" -o -name \"*.cmxa\" \
+  -o -name \"*.cmxs\" -o -name \"*.a\" \
+  -o -name \"*.cma\"`
+
+install: install-library install-extra
+
+submit: prepare
+\topam-publish submit $(BUILD_DIR)/$(NAME).$(SEMVER)
 
 remove:
 \tocamlfind remove $(NAME)
@@ -99,6 +150,8 @@ remove:
 clean:
 \trm -rf $(CLEAN_TARGETS)
 \trm -rf $(BUILD_DIR)
+\trm -rf vrt.mk
+
 
 # =============================================================================
 # Rules for testing
@@ -179,8 +232,9 @@ dispatch begin function
  | _ -> ()
 end"
 
-let write root filename contents =
+let write logger root filename contents =
   let path = Filename.implode [root; filename] in
+  Log.info logger "Writing makefile to %s" path;
   try
     Writer.save path ~contents
     >>| fun _ ->
@@ -188,22 +242,24 @@ let write root filename contents =
   with exn ->
     return @@ Result.Error Gen_mk_write_error
 
-let mk plugins =
-   Prj_project_root.find ~dominating:"Makefile" ()
-   >>=? fun project_root ->
-   write project_root "vrt.mk" makefile
-   >>=? fun _ ->
-   if List.mem plugins "atdgen" then
-     write project_root "myocamlbuild.ml" myocamlbuild
-   else
-     return @@ Ok ()
-
-let mk_cmd plugins () =
-  Common.Cmd.result_guard (fun _ -> mk plugins)
+let mk ~log_level ~plugins =
+  let logger = Vrt_common.Logging.create log_level in
+  Prj_project_root.find ~dominating:"Makefile" ()
+  >>=? fun project_root ->
+  write logger project_root "vrt.mk" makefile
+  >>=? fun _ ->
+  if List.mem plugins "atdgen" then
+    write logger project_root "myocamlbuild.ml" myocamlbuild
+    >>= fun result ->
+    ignore @@ Vrt_common.Logging.flush logger;
+    return result
+  else
+    return @@ Ok ()
 
 let spec =
   let open Command.Spec in
   empty
+  +> Vrt_common.Logging.flag
   +> flag ~aliases:["-p"] "--plugin" (listed string)
     ~doc:"plugin A myocamlbuild plugin (currently only atdgen is supported)."
 
@@ -213,6 +269,9 @@ let command =
   Command.async_basic
     ~summary:"Generates `vrt.mk` file in the root of the project directory"
     spec
-    mk_cmd
+    (fun log_level plugins () ->
+       Vrt_common.Cmd.result_guard (fun _ -> mk ~log_level ~plugins))
+
+
 
 let desc = (name, command)

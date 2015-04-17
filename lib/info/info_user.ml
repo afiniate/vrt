@@ -4,7 +4,7 @@ open Async.Std
 exception Info_no_user
 
 let do_get_user () =
-  match Common.Aws.user with
+  match Vrt_common.Aws.user with
   | Some user ->
     print_string user;
     return @@ Ok ()
@@ -12,7 +12,7 @@ let do_get_user () =
     return @@ Error Info_no_user
 
 let monitor_get_user () =
-  Common.Cmd.result_guard
+  Vrt_common.Cmd.result_guard
     (fun _ -> do_get_user ())
 
 let spec =

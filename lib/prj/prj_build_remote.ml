@@ -25,20 +25,20 @@ let do_ssh logger identity ip area command =
   >>| fun _ ->
   Ok ()
 
-let do_build log_level area cmd =
-  let logger = Common.Logging.create log_level in
+let do_build ~log_level ~area ~cmd =
+  let logger = Vrt_common.Logging.create log_level in
   Prj_vagrant.project_root ()
   >>=? fun project_root ->
   Log.info logger "Project root is %s" project_root;
   Log.info logger "Starting vagrant ...";
-  Common.Logging.flush logger
+  Vrt_common.Logging.flush logger
   >>= fun _ ->
-  Common.Dirs.change_to project_root
+  Vrt_common.Dirs.change_to project_root
   >>= fun _ ->
   Prj_vagrant.start_vagrant project_root
   >>=? fun ip ->
   Log.info logger "Remote IP is %s" ip;
-  Common.Aws.identity ()
+  Vrt_common.Aws.identity ()
   >>=? fun identity ->
   Log.info logger "Syncing remote";
   Prj_vagrant.rsync ~identity ~project_root ~ip ()
@@ -46,11 +46,7 @@ let do_build log_level area cmd =
   Log.info logger "Running build command";
   do_ssh logger identity ip' area cmd
   >>=? fun _ ->
-  Common.Logging.flush logger
-
-let monitor_build log_level area cmd () =
-  Common.Cmd.result_guard
-    (fun _ -> do_build log_level area cmd)
+  Vrt_common.Logging.flush logger
 
 let area_arg =
   Command.Spec.Arg_type.create
@@ -61,7 +57,7 @@ let area_arg =
 let spec =
   let open Command.Spec in
   empty
-  +> Common.Logging.flag
+  +> Vrt_common.Logging.flag
   +> flag ~aliases:["-t"] "--target" (optional_with_default Main area_arg)
     ~doc:"target The target area. main or devops"
   +> anon (maybe_with_default "" ("cmd" %: string))
@@ -75,6 +71,8 @@ let command =
   Command.async_basic ~summary:"Builds the project on the remote vagrant box"
     ~readme
     spec
-    monitor_build
+    (fun log_level area cmd () ->
+       Vrt_common.Cmd.result_guard
+         (fun _ -> do_build ~log_level ~area ~cmd))
 
 let desc = (name, command)

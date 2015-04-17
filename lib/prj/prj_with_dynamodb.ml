@@ -17,11 +17,11 @@ let do_cmd cmd () =
   >>= fun _ ->
   return @@ Ok ()
 
-let do_test log_level cmd =
+let do_test ~log_level ~cmd =
   let open Deferred.Result.Monad_infix in
-  let logger = Common.Logging.create log_level in
+  let logger = Vrt_common.Logging.create log_level in
   Prj_vagrant.project_root ()
-  >>= Common.Dirs.change_to
+  >>= Vrt_common.Dirs.change_to
   >>= fun _ ->
   Log.info logger "Running tests ";
   start_dynamodb ()
@@ -29,23 +29,22 @@ let do_test log_level cmd =
   >>= stop_dynamodb
   >>= fun _ ->
   Log.info logger "Testing complete";
-  Common.Logging.flush logger
-
-let monitor_test log_level cmd () =
-  Common.Cmd.result_guard
-    (fun _ -> do_test log_level cmd)
+  Vrt_common.Logging.flush logger
 
 let spec =
   let open Command.Spec in
   empty
-  +> Common.Logging.flag
+  +> Vrt_common.Logging.flag
   +> anon ("cmd" %: string)
 
 let name = "with-dynamodb"
 
 let command =
-  Command.async_basic ~summary:"Run the provided command (probably a test) with dynamodb"
+  Command.async_basic
+    ~summary:"Run the provided command (probably a test) with dynamodb"
     spec
-    monitor_test
+    (fun log_level cmd () ->
+       Vrt_common.Cmd.result_guard
+         (fun _ -> do_test ~log_level ~cmd))
 
 let desc = (name, command)
