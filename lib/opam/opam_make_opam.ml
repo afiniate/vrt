@@ -77,7 +77,7 @@ let write_opam
                    "\n" ^
                    "depends: [" ^ ((format_build_dependencies build_depends) ^
                                    (format_dependencies depends)) ^ "]\n" in
-    Afin.Files.dump ~dir:target_dir ~name:"opam" ~contents
+    Vrt_common.Files.dump ~dir:target_dir ~name:"opam" ~contents
 
 let get_target_dir
   : target_dir: String.t Option.t -> root_file:String.t ->

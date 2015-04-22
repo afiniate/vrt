@@ -38,7 +38,7 @@ let write_meta target_dir name semver desc depends =
                  "archive(native) = \"" ^ name ^ ".cmxa\"\n" ^
                  "archive(native, plugin) = \"" ^ name ^ ".cmxs\"" ^
                  "exists_if = \""^ name ^ ".cma\"\n" in
-  Afin.Files.dump ~dir:target_dir ~name:"META" ~contents
+  Vrt_common.Files.dump ~dir:target_dir ~name:"META" ~contents
 
 let get_semver
   : String.t Option.t -> (String.t, Exn.t) Deferred.Result.t =
