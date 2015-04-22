@@ -29,7 +29,7 @@ let write_description
   fun ~opam_dir ~description_file ->
     Reader.file_contents description_file
     >>= fun body ->
-    Afin.Files.dump ~dir:opam_dir ~name:"descr" ~contents:body
+    Vrt_common.Files.dump ~dir:opam_dir ~name:"descr" ~contents:body
 
 let make_url
   : org:String.t -> name:String.t -> semver:String.t -> Uri.t =
@@ -77,7 +77,7 @@ let write_url
     >>=? fun body ->
     let md5 = Digest.string body
               |> Digest.to_hex in
-    Afin.Files.dump ~dir:target_dir ~name:"url" ~contents:(format_uri ~uri ~md5)
+    Vrt_common.Files.dump ~dir:target_dir ~name:"url" ~contents:(format_uri ~uri ~md5)
 
 let do_make_opam_description
   : log_level:Log.Level.t -> org:String.t -> name:String.t
