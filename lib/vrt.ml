@@ -4,7 +4,6 @@ open Async.Std
 let command =
   Command.group ~summary:"Base tooling system for aws based projects"
   [Prj.desc;
-   Opam.desc;
    Env_info.desc]
 
 let () =

@@ -15,22 +15,22 @@ let repl logger dirs init_script =
     ()
 
 let gather_all_build_dirs build_dirs =
-  Vrt_common.Dirs.gather_all_dirs build_dirs
+  Flib_dir.gather_all_dirs build_dirs
   >>| fun dirs ->
   Ok dirs
 
 let do_repl ~init_script ~build_dirs ~log_level =
   let open Deferred.Result.Monad_infix in
-  let logger = Vrt_common.Logging.create log_level in
-  Prj_project_root.find ()
+  let logger = Log_common.create log_level in
+  Build_project_root.find ()
   >>= fun project_root ->
-  Vrt_common.Dirs.change_to project_root
+  Flib_dir.change_to project_root
   >>= fun _ ->
   gather_all_build_dirs build_dirs
   >>= fun dirs ->
   repl logger dirs init_script;
   Log.info logger "Testing complete";
-  Vrt_common.Logging.flush logger
+  Log_common.flush logger
 
 let spec =
   let open Command.Spec in
@@ -39,7 +39,7 @@ let spec =
     ~doc:"init The init script (ml) for the toplevel"
   +> flag ~aliases:["-d"] "--include-dir" (listed string)
     ~doc:"include-dir The list of directories to include"
-  +> Vrt_common.Logging.flag
+  +> Log_common.flag
 
 let name = "repl"
 
@@ -47,7 +47,7 @@ let command =
   Command.async_basic ~summary:"Runs a repl with everyhing needed for the project already loaded"
     spec
     (fun init_script build_dirs log_level () ->
-       Vrt_common.Cmd.result_guard
+       Cmd_common.result_guard
          (fun _ -> do_repl ~init_script ~build_dirs ~log_level))
 
 let desc = (name, command)

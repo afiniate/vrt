@@ -26,14 +26,14 @@ let do_ssh logger identity ip area command =
   Ok ()
 
 let do_build ~log_level ~area ~cmd =
-  let logger = Vrt_common.Logging.create log_level in
+  let logger = Log_common.create log_level in
   Prj_vagrant.project_root ()
   >>=? fun project_root ->
   Log.info logger "Project root is %s" project_root;
   Log.info logger "Starting vagrant ...";
-  Vrt_common.Logging.flush logger
+  Log_common.flush logger
   >>= fun _ ->
-  Vrt_common.Dirs.change_to project_root
+  Flib_dir.change_to project_root
   >>= fun _ ->
   Prj_vagrant.start_vagrant project_root
   >>=? fun ip ->
@@ -46,7 +46,7 @@ let do_build ~log_level ~area ~cmd =
   Log.info logger "Running build command";
   do_ssh logger identity ip' area cmd
   >>=? fun _ ->
-  Vrt_common.Logging.flush logger
+  Log_common.flush logger
 
 let area_arg =
   Command.Spec.Arg_type.create
@@ -57,7 +57,7 @@ let area_arg =
 let spec =
   let open Command.Spec in
   empty
-  +> Vrt_common.Logging.flag
+  +> Log_common.flag
   +> flag ~aliases:["-t"] "--target" (optional_with_default Main area_arg)
     ~doc:"target The target area. main or devops"
   +> anon (maybe_with_default "" ("cmd" %: string))
@@ -72,7 +72,7 @@ let command =
     ~readme
     spec
     (fun log_level area cmd () ->
-       Vrt_common.Cmd.result_guard
+       Cmd_common.result_guard
          (fun _ -> do_build ~log_level ~area ~cmd))
 
 let desc = (name, command)

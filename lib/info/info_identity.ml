@@ -9,7 +9,7 @@ let do_identity () =
   return @@ Ok ()
 
 let monitor_identity () =
-  Vrt_common.Cmd.result_guard
+  Cmd_common.result_guard
     (fun _ -> do_identity ())
 
 let spec =
