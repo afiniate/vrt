@@ -12,7 +12,7 @@ let do_get_user () =
     return @@ Error Info_no_user
 
 let monitor_get_user () =
-  Cmd_common.result_guard
+  Trv.Cmd.result_guard
     (fun _ -> do_get_user ())
 
 let spec =

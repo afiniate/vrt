@@ -9,7 +9,7 @@ let do_identity () =
   return @@ Ok ()
 
 let monitor_identity () =
-  Cmd_common.result_guard
+  Trv.Cmd.result_guard
     (fun _ -> do_identity ())
 
 let spec =

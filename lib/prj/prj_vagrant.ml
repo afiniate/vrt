@@ -14,7 +14,7 @@ type cache = {last_start: Time.t;
 type ip = String.t
 
 let project_root () =
-  Build_project_root.find ~dominating:"Vagrantfile" ()
+  Trv.Build.project_root ~dominating:"Vagrantfile" ()
 
 let remote_ip () =
   Async_shell.sh_lines "vagrant ssh-config | grep HostName | awk -F\" \" '{print $2}'"
