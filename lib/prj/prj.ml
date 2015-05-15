@@ -4,16 +4,13 @@ open Async.Std
 let name = "prj"
 
 let command =
-  Command.group ~summary:"Project project tooling for the ocaml systems"
+  Command.group ~summary:"Project tooling for the ocaml systems on AWS"
     [Prj_build_remote.desc;
      Prj_copy_local.desc;
      Prj_mosh.desc;
      Prj_with_dynamodb.desc;
      Prj_repl.desc;
-     Prj_make_dot_merlin.desc;
-     Prj_make_META.desc;
-     Prj_sync.desc;
-     Prj_semver.desc;
-     Prj_gen_mk.desc]
+     Prj_sync.desc]
+
 
 let desc = (name, command)

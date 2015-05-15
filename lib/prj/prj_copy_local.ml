@@ -11,7 +11,7 @@ let do_scp logger identity ip target remote =
 
 let do_copy ~log_level ~target ~remote =
   let open Deferred.Result.Monad_infix in
-  let logger = Vrt_common.Logging.create log_level in
+  let logger = Trv.Log.create log_level in
   let actual_target = match target with
     | Some target -> target
     | None -> "." in
@@ -19,7 +19,7 @@ let do_copy ~log_level ~target ~remote =
   >>= fun project_root ->
   Log.info logger "Project root is %s" project_root;
   Log.info logger "Starting vagrant ...";
-  Vrt_common.Logging.flush logger
+  Trv.Log.flush logger
   >>= fun _ ->
   Prj_vagrant.start_vagrant project_root
   >>= fun ip ->
@@ -31,12 +31,12 @@ let do_copy ~log_level ~target ~remote =
   do_scp logger identity ip actual_target remote
   >>= fun _ ->
   Log.info logger "Copy complete to %s" actual_target;
-  Vrt_common.Logging.flush logger
+  Trv.Log.flush logger
 
 let spec =
   let open Command.Spec in
   empty
-  +> Vrt_common.Logging.flag
+  +> Trv.Log.flag
   +> flag ~aliases:["-t"] "--target" (optional string)
     ~doc:"the local target file or directory that the remote file will be copied into"
   +> anon ("remote" %: string)
@@ -48,7 +48,7 @@ let command =
     ~summary:"Copies a remote file to the local disk if it exists"
     spec
     (fun log_level target remote () ->
-       Vrt_common.Cmd.result_guard
+       Trv.Cmd.result_guard
          (fun _ -> do_copy ~log_level ~target ~remote))
 
 let desc = (name, command)
